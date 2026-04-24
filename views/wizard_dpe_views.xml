@@ -11,7 +11,7 @@
                     Cochez le logement correspondant au client, puis cliquez sur <strong>Générer le PDF DPE</strong>.
                 </div>
                 <field name="line_ids">
-                    <list decoration-success="selected" decoration-danger="etiquette_dpe in ('F', 'G')" decoration-warning="etiquette_dpe == 'E'">
+                    <list editable="bottom" decoration-success="selected" decoration-danger="etiquette_dpe in ('F', 'G')" decoration-warning="etiquette_dpe == 'E'">
                         <field name="selected"/>
                         <field name="date_dpe"/>
                         <field name="type_batiment"/>
