@@ -35,8 +35,13 @@ class ResPartnerDpe(models.Model):
                 f'{_DPE_API}?{params}',
                 headers={'Accept': 'application/json'},
             )
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
+        except TimeoutError:
+            raise UserError(_(
+                "L'API DPE ADEME met trop de temps à répondre.\n"
+                "Veuillez réessayer dans quelques instants."
+            ))
         except urllib.error.URLError as e:
             raise UserError(_("Impossible de contacter l'API DPE ADEME : %s") % str(e))
 
