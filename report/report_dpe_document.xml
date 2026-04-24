@@ -4,7 +4,10 @@
     <t t-call="web.html_container">
         <t t-foreach="docs" t-as="doc">
         <t t-set="dpe" t-value="doc['dpe']"/>
-        <div class="article">
+        <div class="article"
+             t-att-data-oe-model="doc['partner']._name"
+             t-att-data-oe-id="doc['partner'].id"
+             t-att-data-oe-field="'dpe_data_json'">
             <style>
                 * { box-sizing: border-box; }
                 body { font-family: Arial, Helvetica, sans-serif; color: #0F172A; }
