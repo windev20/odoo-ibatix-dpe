@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wizard_dpe_form" model="ir.ui.view">
+        <field name="name">ibatix.wizard.dpe.form</field>
+        <field name="model">ibatix.wizard.dpe</field>
+        <field name="arch" type="xml">
+            <form string="DPE trouvés">
+                <field name="partner_id" invisible="1"/>
+                <div class="alert alert-info mb-3">
+                    <strong><field name="nb_resultats" readonly="1"/> DPE trouvé(s)</strong> pour cette adresse.
+                    Cochez le logement correspondant au client, puis cliquez sur <strong>Générer le PDF DPE</strong>.
+                </div>
+                <field name="line_ids">
+                    <list decoration-success="selected" decoration-danger="etiquette_dpe in ('F', 'G')" decoration-warning="etiquette_dpe == 'E'">
+                        <field name="selected"/>
+                        <field name="date_dpe"/>
+                        <field name="type_batiment"/>
+                        <field name="surface"/>
+                        <field name="etiquette_dpe"/>
+                        <field name="etiquette_ges"/>
+                        <field name="conso_ep"/>
+                        <field name="periode_construction"/>
+                        <field name="adresse"/>
+                        <field name="numero_dpe"/>
+                        <field name="dpe_data_json" column_invisible="1"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_generer_pdf"
+                            string="Générer le PDF DPE"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

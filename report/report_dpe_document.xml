@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="report_dpe_document">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="doc">
+        <t t-set="dpe" t-value="doc['dpe']"/>
+        <div class="article">
+            <style>
+                * { box-sizing: border-box; }
+                body { font-family: Arial, Helvetica, sans-serif; color: #0F172A; }
+                .dpe-header {
+                    background: #1B3A6B; color: #fff;
+                    padding: 14px 20px; margin-bottom: 18px;
+                    border-radius: 4px;
+                }
+                .dpe-header h1 { margin: 0 0 4px; font-size: 20px; letter-spacing: 1px; }
+                .dpe-header .address { font-size: 13px; opacity: 0.9; margin: 0; }
+                .dpe-header .meta { font-size: 11px; opacity: 0.75; margin: 4px 0 0; }
+                .passoire-alert {
+                    background: #FEE2E2; border: 2px solid #DC2626;
+                    border-radius: 4px; padding: 10px 16px; margin-bottom: 16px;
+                    color: #7F1D1D; font-weight: bold; font-size: 13px;
+                }
+                .section-title {
+                    background: #1B3A6B; color: #fff;
+                    padding: 8px 14px; font-size: 12px; font-weight: bold;
+                    letter-spacing: 0.5px; text-transform: uppercase;
+                    margin: 0 0 0; border-radius: 3px 3px 0 0;
+                }
+                .section-body {
+                    border: 1px solid #CBD5E1; border-top: none;
+                    padding: 12px 14px; margin-bottom: 14px;
+                    border-radius: 0 0 3px 3px;
+                }
+                table.data-table {
+                    width: 100%; border-collapse: collapse;
+                    font-size: 11px; margin: 0;
+                }
+                table.data-table th {
+                    background: #F1F5F9; color: #475569;
+                    padding: 6px 8px; text-align: left;
+                    border-bottom: 2px solid #CBD5E1;
+                    font-weight: bold; font-size: 10px; text-transform: uppercase;
+                }
+                table.data-table td {
+                    padding: 6px 8px; border-bottom: 1px solid #E2E8F0;
+                    vertical-align: middle;
+                }
+                table.data-table tr:nth-child(even) td { background: #F8FAFC; }
+                table.data-table td.val { font-weight: bold; text-align: right; white-space: nowrap; }
+                .kpi-box {
+                    display: inline-block; text-align: center;
+                    border: 1px solid #CBD5E1; border-radius: 4px;
+                    padding: 8px 12px; margin: 4px; background: #F8FAFC;
+                    vertical-align: top;
+                }
+                .kpi-box .kpi-val { font-size: 18px; font-weight: bold; color: #1B3A6B; display: block; }
+                .kpi-box .kpi-lbl { font-size: 9px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; }
+                .badge {
+                    display: inline-block; padding: 3px 10px;
+                    border-radius: 3px; font-size: 11px; font-weight: bold;
+                }
+                .label-title {
+                    font-size: 11px; font-weight: bold; color: #475569;
+                    text-transform: uppercase; letter-spacing: 0.5px;
+                    margin-bottom: 6px;
+                }
+                .label-value {
+                    font-size: 13px; font-weight: bold; color: #0F172A;
+                    margin-top: 8px;
+                }
+                .label-unit { font-size: 10px; color: #64748B; }
+                .page-break { page-break-before: always; }
+            </style>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 PARTIE 1 — SYNTHÈSE
+            ══════════════════════════════════════════════════════════ -->
+
+            <!-- En-tête -->
+            <div class="dpe-header">
+                <h1>RAPPORT DPE</h1>
+                <p class="address"><t t-esc="dpe.get('adresse_ban') or dpe.get('adresse_complete_brut') or doc['partner'].street or ''"/></p>
+                <p class="meta">
+                    N° DPE : <t t-esc="dpe.get('numero_dpe', '—')"/>
+                    &nbsp;|&nbsp; Date : <t t-esc="doc['date_dpe']"/>
+                    &nbsp;|&nbsp; Valide jusqu'au : <t t-esc="doc['date_validite']"/>
+                    &nbsp;|&nbsp; Visite : <t t-esc="doc['date_visite']"/>
+                </p>
+            </div>
+
+            <!-- Alerte passoire thermique -->
+            <t t-if="doc['is_passoire']">
+                <div class="passoire-alert">
+                    PASSOIRE THERMIQUE — Logement classé
+                    <t t-esc="dpe.get('etiquette_dpe', '')"/> :
+                    consommation excessive. Travaux d'amélioration énergétique fortement recommandés.
+                </div>
+            </t>
+
+            <!-- Étiquettes DPE + GES côte à côte -->
+            <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+                <tr>
+                    <!-- Étiquette Énergie -->
+                    <td style="width:48%; vertical-align:top; padding-right:10px;">
+                        <div class="section-title">Classe Énergie</div>
+                        <div class="section-body" style="padding:10px 12px;">
+                            <p class="label-title" style="margin:0 0 8px;">Consommation d'énergie primaire</p>
+                            <t t-foreach="doc['scale_energie']" t-as="row">
+                                <div style="margin-bottom:2px; line-height:0; overflow:visible;">
+                                    <div t-attf-style="
+                                        display:inline-block;
+                                        background-color:{{ row['color'] }};
+                                        width:{{ row['width'] }}%;
+                                        height:{{ '26px' if row['selected'] else '22px' }};
+                                        line-height:{{ '26px' if row['selected'] else '22px' }};
+                                        padding:0 8px;
+                                        {{ 'border:2px solid #1B3A6B;' if row['selected'] else '' }}
+                                        vertical-align:middle;
+                                    ">
+                                        <span t-attf-style="color:{{ row['text_color'] }};font-weight:bold;font-size:{{ '14px' if row['selected'] else '10px' }};margin-right:6px;">
+                                            <t t-esc="row['letter']"/>
+                                        </span>
+                                        <span t-attf-style="color:{{ row['text_color'] }};font-size:9px;">
+                                            <t t-esc="row['range']"/> kWh/m²
+                                        </span>
+                                    </div>
+                                    <t t-if="row['selected']">
+                                        <span style="display:inline-block;vertical-align:middle;font-size:16px;font-weight:bold;margin-left:4px;line-height:26px;">◀</span>
+                                    </t>
+                                </div>
+                            </t>
+                            <p class="label-value" style="margin:10px 0 2px;">
+                                <t t-esc="doc['conso_ep']"/> <span class="label-unit">kWh/m²/an (EP)</span>
+                            </p>
+                            <p style="margin:0;font-size:10px;color:#64748B;">
+                                Énergie finale : <t t-esc="doc['conso_ef']"/> kWh/m²/an
+                            </p>
+                        </div>
+                    </td>
+
+                    <!-- Étiquette GES -->
+                    <td style="width:48%; vertical-align:top; padding-left:10px;">
+                        <div class="section-title">Classe GES</div>
+                        <div class="section-body" style="padding:10px 12px;">
+                            <p class="label-title" style="margin:0 0 8px;">Émissions de gaz à effet de serre</p>
+                            <t t-foreach="doc['scale_ges']" t-as="row">
+                                <div style="margin-bottom:2px; line-height:0; overflow:visible;">
+                                    <div t-attf-style="
+                                        display:inline-block;
+                                        background-color:{{ row['color'] }};
+                                        width:{{ row['width'] }}%;
+                                        height:{{ '26px' if row['selected'] else '22px' }};
+                                        line-height:{{ '26px' if row['selected'] else '22px' }};
+                                        padding:0 8px;
+                                        {{ 'border:2px solid #1B3A6B;' if row['selected'] else '' }}
+                                        vertical-align:middle;
+                                    ">
+                                        <span t-attf-style="color:{{ row['text_color'] }};font-weight:bold;font-size:{{ '14px' if row['selected'] else '10px' }};margin-right:6px;">
+                                            <t t-esc="row['letter']"/>
+                                        </span>
+                                        <span t-attf-style="color:{{ row['text_color'] }};font-size:9px;">
+                                            <t t-esc="row['range']"/> kg CO₂/m²
+                                        </span>
+                                    </div>
+                                    <t t-if="row['selected']">
+                                        <span style="display:inline-block;vertical-align:middle;font-size:16px;font-weight:bold;margin-left:4px;line-height:26px;">◀</span>
+                                    </t>
+                                </div>
+                            </t>
+                            <p class="label-value" style="margin:10px 0 2px;">
+                                <t t-esc="doc['emission_ges']"/> <span class="label-unit">kg CO₂/m²/an</span>
+                            </p>
+                            <p style="margin:0;font-size:10px;color:#64748B;">
+                                Coût total estimé : <t t-esc="doc['cout_total']"/> €/an
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Indicateurs clés -->
+            <div class="section-title">Indicateurs clés du logement</div>
+            <div class="section-body" style="padding:10px 12px; margin-bottom:14px;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr>
+                        <td style="width:33%; padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Surface habitable</span><br/>
+                            <span style="font-size:16px;font-weight:bold;color:#1B3A6B;"><t t-esc="doc['surface']"/> m²</span>
+                        </td>
+                        <td style="width:33%; padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Type de bâtiment</span><br/>
+                            <span style="font-size:14px;font-weight:bold;"><t t-esc="(dpe.get('type_batiment') or '—').capitalize()"/></span>
+                        </td>
+                        <td style="width:33%; padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Période de construction</span><br/>
+                            <span style="font-size:14px;font-weight:bold;"><t t-esc="dpe.get('periode_construction') or '—'"/></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Chauffage principal</span><br/>
+                            <span style="font-size:12px;font-weight:bold;"><t t-esc="dpe.get('type_energie_principale_chauffage') or '—'"/></span>
+                        </td>
+                        <td style="padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">ECS principale</span><br/>
+                            <span style="font-size:12px;font-weight:bold;"><t t-esc="dpe.get('type_energie_principale_ecs') or '—'"/></span>
+                        </td>
+                        <td style="padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Zone climatique</span><br/>
+                            <span style="font-size:12px;font-weight:bold;"><t t-esc="dpe.get('zone_climatique') or '—'"/></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="padding:4px 8px; vertical-align:top;">
+                            <span style="font-size:10px;color:#64748B;text-transform:uppercase;">Ventilation</span><br/>
+                            <span style="font-size:12px;font-weight:bold;"><t t-esc="dpe.get('type_ventilation') or '—'"/></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Qualité de l'isolation -->
+            <t t-if="doc['qualite']">
+                <div class="section-title">Qualité de l'isolation</div>
+                <div class="section-body" style="padding:10px 12px; margin-bottom:14px;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <t t-foreach="doc['qualite']" t-as="q">
+                            <tr>
+                                <td style="padding:4px 6px; font-size:11px; width:50%;"><t t-esc="q['label']"/></td>
+                                <td style="padding:4px 6px;">
+                                    <span class="badge" t-attf-style="{{ q['style'] }} padding:3px 10px; border-radius:3px; font-size:11px; font-weight:bold;">
+                                        <t t-esc="q['value']"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+                    </table>
+                </div>
+            </t>
+
+            <!-- Fin page 1 / Début page 2 -->
+            <div class="page-break"/>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 PARTIE 2 — DONNÉES COMPLÈTES
+            ══════════════════════════════════════════════════════════ -->
+
+            <div style="font-size:14px; font-weight:bold; color:#1B3A6B; margin-bottom:12px; border-bottom:2px solid #1B3A6B; padding-bottom:6px;">
+                DONNÉES TECHNIQUES COMPLÈTES
+                <span style="font-size:10px;font-weight:normal;color:#64748B;margin-left:8px;">
+                    <t t-esc="dpe.get('adresse_ban') or ''"/>
+                </span>
+            </div>
+
+            <!-- Consommations détaillées par usage -->
+            <t t-if="doc['usages']">
+                <div class="section-title">Consommations détaillées par usage</div>
+                <div class="section-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Usage</th>
+                                <th style="text-align:right;">Énergie finale (kWh)</th>
+                                <th style="text-align:right;">Énergie primaire (kWh)</th>
+                                <th style="text-align:right;">Émissions GES (kg CO₂)</th>
+                                <th style="text-align:right;">Coût estimé (€)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc['usages']" t-as="u">
+                                <tr>
+                                    <td><t t-esc="u['label']"/></td>
+                                    <td class="val"><t t-esc="u['ef']"/></td>
+                                    <td class="val"><t t-esc="u['ep']"/></td>
+                                    <td class="val"><t t-esc="u['ges']"/></td>
+                                    <td class="val"><t t-esc="u['cout']"/></td>
+                                </tr>
+                            </t>
+                            <tr style="font-weight:bold; background:#EFF6FF;">
+                                <td>TOTAL (5 usages)</td>
+                                <td class="val"><t t-esc="doc['conso_ef']"/></td>
+                                <td class="val"><t t-esc="doc['conso_ep']"/></td>
+                                <td class="val"><t t-esc="doc['emission_ges']"/></td>
+                                <td class="val"><t t-esc="doc['cout_total']"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+            <!-- Besoins énergétiques -->
+            <t t-if="doc['besoin_chauffage'] != '—' or doc['besoin_ecs'] != '—'">
+                <div class="section-title">Besoins énergétiques</div>
+                <div class="section-body">
+                    <table class="data-table">
+                        <tr><td>Besoin de chauffage</td><td class="val"><t t-esc="doc['besoin_chauffage']"/> kWh</td></tr>
+                        <tr><td>Besoin en eau chaude sanitaire</td><td class="val"><t t-esc="doc['besoin_ecs']"/> kWh</td></tr>
+                        <tr><td>Apports solaires (saison chauffe)</td><td class="val"><t t-esc="doc['apport_solaire']"/> kWh</td></tr>
+                        <tr><td>Apports internes (saison chauffe)</td><td class="val"><t t-esc="doc['apport_interne']"/> kWh</td></tr>
+                        <t t-if="doc['ubat'] != '—'">
+                            <tr><td>Coefficient Ubat</td><td class="val"><t t-esc="doc['ubat']"/> W/m².K</td></tr>
+                        </t>
+                    </table>
+                </div>
+            </t>
+
+            <!-- Déperditions thermiques -->
+            <t t-if="doc['deperditions']">
+                <div class="section-title">Déperditions thermiques de l'enveloppe</div>
+                <div class="section-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Composant</th>
+                                <th style="text-align:right;">Déperditions (W/K)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc['deperditions']" t-as="dep">
+                                <tr>
+                                    <td><t t-esc="dep['label']"/></td>
+                                    <td class="val"><t t-esc="dep['value']"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+            <!-- Systèmes de chauffage -->
+            <t t-if="dpe.get('description_installation_chauffage_n1')">
+                <div class="section-title">Systèmes de chauffage et ECS</div>
+                <div class="section-body">
+                    <table class="data-table">
+                        <t t-if="dpe.get('description_installation_chauffage_n1')">
+                            <tr>
+                                <td style="width:35%;font-weight:bold;">Installation chauffage principale</td>
+                                <td><t t-esc="dpe.get('description_installation_chauffage_n1', '—')"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="dpe.get('description_installation_chauffage_n2')">
+                            <tr>
+                                <td style="font-weight:bold;">Installation chauffage secondaire</td>
+                                <td><t t-esc="dpe.get('description_installation_chauffage_n2', '—')"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="dpe.get('type_emetteur_installation_chauffage_n1')">
+                            <tr>
+                                <td style="font-weight:bold;">Émetteurs de chaleur</td>
+                                <td><t t-esc="dpe.get('type_emetteur_installation_chauffage_n1', '—')"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="dpe.get('type_installation_chauffage')">
+                            <tr>
+                                <td style="font-weight:bold;">Type installation</td>
+                                <td><t t-esc="(dpe.get('type_installation_chauffage') or '').capitalize()"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="dpe.get('description_installation_ecs_n1')">
+                            <tr>
+                                <td style="font-weight:bold;">Eau chaude sanitaire</td>
+                                <td><t t-esc="dpe.get('description_installation_ecs_n1', '—')"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="dpe.get('type_ventilation')">
+                            <tr>
+                                <td style="font-weight:bold;">Ventilation</td>
+                                <td><t t-esc="dpe.get('type_ventilation', '—')"/></td>
+                            </tr>
+                        </t>
+                    </table>
+                </div>
+            </t>
+
+            <!-- Informations bâtiment -->
+            <div class="section-title">Informations bâtiment</div>
+            <div class="section-body">
+                <table class="data-table">
+                    <tr><td style="width:40%;">Surface habitable logement</td><td class="val"><t t-esc="doc['surface']"/> m²</td></tr>
+                    <t t-if="doc['surface_immeuble'] != '—'">
+                        <tr><td>Surface habitable immeuble</td><td class="val"><t t-esc="doc['surface_immeuble']"/> m²</td></tr>
+                    </t>
+                    <t t-if="dpe.get('nombre_appartement')">
+                        <tr><td>Nombre d'appartements</td><td class="val"><t t-esc="dpe.get('nombre_appartement')"/></td></tr>
+                    </t>
+                    <t t-if="doc['hauteur_plafond'] != '—'">
+                        <tr><td>Hauteur sous plafond</td><td class="val"><t t-esc="doc['hauteur_plafond']"/> m</td></tr>
+                    </t>
+                    <t t-if="dpe.get('nombre_niveau_logement')">
+                        <tr><td>Nombre de niveaux (logement)</td><td class="val"><t t-esc="dpe.get('nombre_niveau_logement')"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('nombre_niveau_immeuble')">
+                        <tr><td>Nombre de niveaux (immeuble)</td><td class="val"><t t-esc="dpe.get('nombre_niveau_immeuble')"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('classe_inertie_batiment')">
+                        <tr><td>Classe d'inertie</td><td class="val"><t t-esc="dpe.get('classe_inertie_batiment', '—').capitalize()"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('classe_altitude')">
+                        <tr><td>Altitude</td><td class="val"><t t-esc="dpe.get('classe_altitude', '—')"/></td></tr>
+                    </t>
+                    <tr><td>Zone climatique</td><td class="val"><t t-esc="dpe.get('zone_climatique') or '—'"/></td></tr>
+                    <t t-if="dpe.get('code_postal_ban')">
+                        <tr><td>Code postal</td><td class="val"><t t-esc="dpe.get('code_postal_ban', '—')"/></td></tr>
+                    </t>
+                </table>
+            </div>
+
+            <!-- Informations administratives -->
+            <div class="section-title">Informations administratives</div>
+            <div class="section-body">
+                <table class="data-table">
+                    <tr><td style="width:40%;">Numéro DPE</td><td class="val"><t t-esc="dpe.get('numero_dpe', '—')"/></td></tr>
+                    <tr><td>Date de visite</td><td class="val"><t t-esc="doc['date_visite']"/></td></tr>
+                    <tr><td>Date d'établissement</td><td class="val"><t t-esc="doc['date_dpe']"/></td></tr>
+                    <tr><td>Date de fin de validité</td><td class="val"><t t-esc="doc['date_validite']"/></td></tr>
+                    <t t-if="dpe.get('modele_dpe')">
+                        <tr><td>Méthode de calcul</td><td><t t-esc="dpe.get('modele_dpe', '—')"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('version_dpe')">
+                        <tr><td>Version DPE</td><td class="val"><t t-esc="str(dpe.get('version_dpe', '—'))"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('identifiant_ban')">
+                        <tr><td>Identifiant BAN</td><td class="val"><t t-esc="dpe.get('identifiant_ban', '—')"/></td></tr>
+                    </t>
+                    <t t-if="dpe.get('id_rnb')">
+                        <tr><td>Identifiant RNB</td><td class="val"><t t-esc="dpe.get('id_rnb', '—')"/></td></tr>
+                    </t>
+                </table>
+                <p style="font-size:9px;color:#94A3B8;margin:10px 0 0;text-align:right;">
+                    Source : ADEME — Registre National des DPE — data.ademe.fr
+                    &nbsp;|&nbsp; Généré par IBATIX le <t t-esc="doc['partner'].env.cr.now().strftime('%d/%m/%Y')"/>
+                </p>
+            </div>
+
+        </div>
+        </t>
+    </t>
+</template>
+</odoo>

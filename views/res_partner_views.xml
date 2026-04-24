@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_dpe" model="ir.ui.view">
+        <field name="name">res.partner.form.ibatix.dpe</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Boutons DPE dans la barre d'actions -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_rechercher_dpe"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-leaf"
+                        string="Rechercher DPE"
+                        invisible="not street"/>
+                <button name="action_regenerer_dpe_pdf"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-pdf-o"
+                        invisible="not dpe_numero">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">DPE</span>
+                        <span class="o_stat_value">
+                            <field name="dpe_etiquette" readonly="1"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Champs DPE invisibles (stockage) -->
+            <field name="website" position="after">
+                <field name="dpe_data_json" invisible="1"/>
+                <field name="dpe_numero" invisible="1"/>
+                <field name="dpe_etiquette" invisible="1"/>
+                <field name="dpe_etiquette_ges" invisible="1"/>
+                <field name="dpe_date" invisible="1"/>
+            </field>
+
+        </field>
+    </record>
+</odoo>
