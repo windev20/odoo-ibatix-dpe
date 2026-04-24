@@ -83,9 +83,9 @@
                 <p class="address"><t t-esc="dpe.get('adresse_ban') or dpe.get('adresse_complete_brut') or doc['partner'].street or ''"/></p>
                 <p class="meta">
                     N° DPE : <t t-esc="dpe.get('numero_dpe', '—')"/>
-                    &nbsp;|&nbsp; Date : <t t-esc="doc['date_dpe']"/>
-                    &nbsp;|&nbsp; Valide jusqu'au : <t t-esc="doc['date_validite']"/>
-                    &nbsp;|&nbsp; Visite : <t t-esc="doc['date_visite']"/>
+                    &#160;|&#160; Date : <t t-esc="doc['date_dpe']"/>
+                    &#160;|&#160; Valide jusqu'au : <t t-esc="doc['date_validite']"/>
+                    &#160;|&#160; Visite : <t t-esc="doc['date_visite']"/>
                 </p>
             </div>
 
@@ -429,7 +429,7 @@
                 </table>
                 <p style="font-size:9px;color:#94A3B8;margin:10px 0 0;text-align:right;">
                     Source : ADEME — Registre National des DPE — data.ademe.fr
-                    &nbsp;|&nbsp; Généré par IBATIX le <t t-esc="doc['partner'].env.cr.now().strftime('%d/%m/%Y')"/>
+                    &#160;|&#160; Généré par IBATIX le <t t-esc="doc['partner'].env.cr.now().strftime('%d/%m/%Y')"/>
                 </p>
             </div>
 
